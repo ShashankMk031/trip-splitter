@@ -1,12 +1,42 @@
-import { configureStore } from '@reduxjs/toolkit';
-import expensesReducer, { type ExpensesState } from './expensesSlice';
+import { configureStore, createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
+import { loadTripData, saveTripData, type StorageLike } from '../domain/storage';
+import expensesReducer, {
+  addExpense,
+  deleteExpense,
+  type ExpensesState,
+} from './expensesSlice';
 
-export function createAppStore(preloadedState?: { trip: ExpensesState }) {
+interface StoreStateShape {
+  trip: ExpensesState;
+}
+
+export function createAppStore(
+  preloadedState?: StoreStateShape,
+  storage?: StorageLike | null,
+) {
+  const persistenceMiddleware = createListenerMiddleware<StoreStateShape>();
+
+  persistenceMiddleware.startListening({
+    matcher: isAnyOf(addExpense, deleteExpense),
+    effect: (_action, listenerApi) => {
+      const { members, expenses } = listenerApi.getState().trip;
+      saveTripData({ members, expenses }, storage);
+    },
+  });
+
+  const initialTripState: ExpensesState = preloadedState
+    ? preloadedState.trip
+    : loadTripData(storage);
+
   return configureStore({
     reducer: {
       trip: expensesReducer,
     },
-    preloadedState,
+    preloadedState: {
+      trip: initialTripState,
+    },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().prepend(persistenceMiddleware.middleware),
   });
 }
 
