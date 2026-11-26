@@ -1,0 +1,49 @@
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  padding-inline: var(--space-4);
+  border: 1px solid;
+  border-radius: var(--radius-md);
+}
+
+.success {
+  background-color: var(--color-primary-soft);
+  border-color: #9ed4c4;
+  color: var(--color-primary-hover);
+}
+
+.info {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.message {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}

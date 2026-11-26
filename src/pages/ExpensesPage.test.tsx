@@ -98,4 +98,35 @@ describe('ExpensesPage dashboard', () => {
     expect(screen.getAllByText('settled up')).toHaveLength(5);
     expect(screen.getByText('No expenses recorded yet')).toBeInTheDocument();
   });
+
+  it('requires confirmation before deleting an expense and recalculates balances on confirm', async () => {
+    const user = userEvent.setup();
+    renderDashboard();
+
+    await user.click(screen.getByRole('button', { name: 'Delete Airport cab' }));
+
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toBeInTheDocument();
+    expect(within(dialog).getByRole('heading', { name: 'Delete expense?' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Cancel' })).toHaveFocus();
+
+    // Cancel keeps the expense intact
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: 'Airport cab' })).toBeInTheDocument();
+
+    // Confirm deletion removes the expense and recalculates totals & balances
+    await user.click(screen.getByRole('button', { name: 'Delete Airport cab' }));
+    const confirmDialog = screen.getByRole('dialog');
+    await user.click(within(confirmDialog).getByRole('button', { name: 'Delete expense' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('rowheader', { name: 'Airport cab' })).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Deleted "Airport cab".');
+
+    // Total expenses: ₹42,249.99 - ₹1,499.99 = ₹40,750.00 across 5 expenses
+    const summaryRegion = screen.getByRole('region', { name: 'Trip summary' });
+    expect(within(summaryRegion).getByText('₹40,750.00')).toBeInTheDocument();
+    expect(within(summaryRegion).getByText('5')).toBeInTheDocument();
+  });
 });

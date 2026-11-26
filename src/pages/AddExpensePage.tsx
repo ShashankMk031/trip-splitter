@@ -1,29 +1,47 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { ExpenseForm } from '../components/form/ExpenseForm';
+import { Card } from '../components/ui/Card';
+import { formatPaise } from '../domain/money';
+import { addExpense, selectMembers } from '../store/expensesSlice';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import type { Expense } from '../types/expense';
 import styles from './Page.module.css';
 
 export function AddExpensePage() {
+  const members = useAppSelector(selectMembers);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
   useEffect(() => {
     document.title = 'Add expense | Trip Splitter';
   }, []);
+
+  function handleSave(expense: Expense): void {
+    dispatch(addExpense(expense));
+    void navigate('/', {
+      state: {
+        flashMessage: `Added "${expense.description}" (${formatPaise(expense.amount)}).`,
+      },
+    });
+  }
+
+  function handleCancel(): void {
+    void navigate('/');
+  }
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Add expense</h1>
-          <p className={styles.subtitle}>Record a shared expense for the trip.</p>
+          <p className={styles.subtitle}>Record a shared expense for Goa Getaway.</p>
         </div>
       </div>
 
-      <section className={styles.card} aria-label="Add expense form placeholder">
-        <p className={styles.subtitle}>
-          Expense creation form and split controls will be implemented in the next phase.
-        </p>
-        <Link to="/" className={styles.actionLink}>
-          Back to Expenses
-        </Link>
-      </section>
+      <Card padding="lg">
+        <ExpenseForm members={members} onSave={handleSave} onCancel={handleCancel} />
+      </Card>
     </div>
   );
 }

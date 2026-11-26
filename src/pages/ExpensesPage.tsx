@@ -1,32 +1,61 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BalanceGrid } from '../components/expenses/BalanceGrid';
 import { ExpenseFilters, type CategoryFilter } from '../components/expenses/ExpenseFilters';
 import { ExpenseTable } from '../components/expenses/ExpenseTable';
 import { SummaryCards } from '../components/expenses/SummaryCards';
+import { AlertBanner } from '../components/ui/AlertBanner';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { EmptyState } from '../components/ui/EmptyState';
+import { formatPaise } from '../domain/money';
 import {
+  deleteExpense,
   selectDashboardSummary,
   selectMemberBalances,
   selectMembers,
   selectSortedExpenses,
 } from '../store/expensesSlice';
-import { useAppSelector } from '../store/hooks';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
 import styles from './ExpensesPage.module.css';
+
+function extractFlashMessage(state: unknown): string | null {
+  if (typeof state !== 'object' || state === null) {
+    return null;
+  }
+  if ('flashMessage' in state && typeof state.flashMessage === 'string') {
+    return state.flashMessage;
+  }
+  return null;
+}
 
 export function ExpensesPage() {
   const members = useAppSelector(selectMembers);
   const sortedExpenses = useAppSelector(selectSortedExpenses);
   const balances = useAppSelector(selectMemberBalances);
   const summary = useAppSelector(selectDashboardSummary);
+  const dispatch = useAppDispatch();
+
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>('All');
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [bannerMessage, setBannerMessage] = useState<string | null>(() =>
+    extractFlashMessage(location.state),
+  );
 
   useEffect(() => {
     document.title = 'Expenses | Trip Splitter';
   }, []);
+
+  useEffect(() => {
+    const incoming = extractFlashMessage(location.state);
+    if (incoming) {
+      void navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   const filteredExpenses =
     selectedCategory === 'All'
@@ -34,6 +63,21 @@ export function ExpensesPage() {
       : sortedExpenses.filter((expense) => expense.category === selectedCategory);
 
   const filteredTotalPaise = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const pendingExpense =
+    pendingDeleteId !== null
+      ? (sortedExpenses.find((expense) => expense.id === pendingDeleteId) ?? null)
+      : null;
+
+  function handleConfirmDelete(): void {
+    if (!pendingExpense) {
+      return;
+    }
+    dispatch(deleteExpense(pendingExpense.id));
+    setPendingDeleteId(null);
+    setBannerMessage(`Deleted "${pendingExpense.description}".`);
+    const mainHeading = document.getElementById('main-content');
+    mainHeading?.focus();
+  }
 
   return (
     <div className={styles.page}>
@@ -51,6 +95,16 @@ export function ExpensesPage() {
           Add expense
         </Link>
       </div>
+
+      {bannerMessage ? (
+        <AlertBanner
+          message={bannerMessage}
+          tone="success"
+          onDismiss={() => {
+            setBannerMessage(null);
+          }}
+        />
+      ) : null}
 
       <SummaryCards summary={summary} />
 
@@ -96,10 +150,30 @@ export function ExpensesPage() {
               }
             />
           ) : (
-            <ExpenseTable expenses={filteredExpenses} members={members} />
+            <ExpenseTable
+              expenses={filteredExpenses}
+              members={members}
+              onDeleteRequest={setPendingDeleteId}
+            />
           )}
         </Card>
       </section>
+
+      <ConfirmDialog
+        isOpen={pendingExpense !== null}
+        title="Delete expense?"
+        description={
+          pendingExpense
+            ? `Are you sure you want to delete "${pendingExpense.description}" (${formatPaise(pendingExpense.amount)})? Balances will recalculate immediately.`
+            : ''
+        }
+        confirmLabel="Delete expense"
+        cancelLabel="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          setPendingDeleteId(null);
+        }}
+      />
     </div>
   );
 }

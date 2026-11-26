@@ -1,0 +1,48 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--space-4);
+}
+
+.fullSpan {
+  grid-column: 1 / -1;
+}
+
+.control {
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding-block: var(--space-2);
+  padding-inline: var(--space-3);
+  border: 1px solid #788781;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.numericControl {
+  font-variant-numeric: tabular-nums;
+}
+
+.controlInvalid {
+  border-color: var(--color-danger);
+}
+
+.divider {
+  border-block-start: 1px solid var(--color-border);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-block-start: var(--space-2);
+  border-block-start: 1px solid var(--color-border);
+}
