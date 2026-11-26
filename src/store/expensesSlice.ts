@@ -1,4 +1,5 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { createSelector, createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { calculateDashboardSummary, calculateMemberBalances } from '../domain/balance';
 import { getSampleTripData } from '../domain/sampleData';
 import type { Expense, Member } from '../types/expense';
 
@@ -34,4 +35,28 @@ export const expensesSlice = createSlice({
 
 export const { addExpense, deleteExpense } = expensesSlice.actions;
 export const { selectMembers, selectExpenses } = expensesSlice.selectors;
+
+export const selectSortedExpenses = createSelector([selectExpenses], (expenses) =>
+  expenses
+    .map((expense, index) => ({ expense, index }))
+    .sort((a, b) => {
+      const dateOrder = b.expense.date.localeCompare(a.expense.date);
+      if (dateOrder !== 0) {
+        return dateOrder;
+      }
+      return b.index - a.index;
+    })
+    .map((entry) => entry.expense),
+);
+
+export const selectMemberBalances = createSelector(
+  [selectMembers, selectExpenses],
+  (members, expenses) => calculateMemberBalances(members, expenses),
+);
+
+export const selectDashboardSummary = createSelector(
+  [selectMemberBalances, selectExpenses],
+  (balances, expenses) => calculateDashboardSummary(balances, expenses),
+);
+
 export default expensesSlice.reducer;

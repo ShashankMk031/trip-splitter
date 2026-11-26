@@ -1,0 +1,170 @@
+.tableWrapper {
+  container-type: inline-size;
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  --label-date: 'Date';
+  --label-category: 'Category';
+  --label-paid-by: 'Paid by';
+  --label-amount: 'Amount';
+  --label-split: 'Split';
+
+  inline-size: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--text-sm);
+}
+
+.table thead th {
+  padding-block: var(--space-3);
+  padding-inline: var(--space-3);
+  border-block-end: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-align: start;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.table tbody tr {
+  transition: background-color 120ms ease;
+}
+
+.table tbody tr:hover {
+  background-color: var(--color-bg);
+}
+
+.table tbody th,
+.table tbody td {
+  padding-block: var(--space-3);
+  padding-inline: var(--space-3);
+  border-block-end: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child th,
+.table tbody tr:last-child td {
+  border-block-end: none;
+}
+
+.dateCell {
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.descriptionCell {
+  color: var(--color-text);
+  font-weight: 600;
+  text-align: start;
+}
+
+.numericHeader,
+.amountCell {
+  text-align: end;
+}
+
+.numeric {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.splitCell {
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.actionsHeader,
+.actionsCell {
+  text-align: end;
+  white-space: nowrap;
+}
+
+@container (width < 44rem) {
+  .table,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-block-start: var(--space-3);
+  }
+
+  .table tbody tr {
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+  }
+
+  .table tbody th,
+  .table tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-block: var(--space-1);
+    padding-inline: 0;
+    border-block-end: none;
+    text-align: end;
+  }
+
+  .table tbody th.descriptionCell {
+    padding-block-end: var(--space-2);
+    margin-block-end: var(--space-2);
+    border-block-end: 1px solid var(--color-border);
+    font-size: var(--text-base);
+    text-align: start;
+  }
+
+  .dateCell::before {
+    content: var(--label-date) ': ';
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  .categoryCell::before {
+    content: var(--label-category) ': ';
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  .paidByCell::before {
+    content: var(--label-paid-by) ': ';
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  .amountCell::before {
+    content: var(--label-amount) ': ';
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  .splitCell::before {
+    content: var(--label-split) ': ';
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  .actionsCell {
+    justify-content: flex-end;
+    padding-block-start: var(--space-2);
+    margin-block-start: var(--space-1);
+    border-block-start: 1px solid var(--color-border);
+  }
+}
